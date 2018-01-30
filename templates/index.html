@@ -1,0 +1,47 @@
+<ion-view>
+    <ion-nav-title><mm-format-text watch="true">{{ title }}</mm-format-text></ion-nav-title>
+    <ion-nav-buttons side="secondary">
+        <mm-context-menu>
+            <mm-context-menu-item priority="900" ng-if="moduleUrl" href="moduleUrl" content="'mm.core.openinbrowser' | translate" icon-action="'ion-share'"></mm-context-menu-item>
+        </mm-context-menu>
+    </ion-nav-buttons>
+    <ion-content mm-state-class>
+        <mm-course-mod-description description="description" component="{{component}}" component-id="{{componentId}}" watch="true"></mm-course-mod-description>
+        
+        <!-- Choice options -->
+        <section class="card" ng-repeat="(qikey, questioninfo) in questionsinfo">
+            <div class="item item-divider">
+                <h2>{{questioninfo.name}}</h2>
+            </div>
+            <!-- Yes/No -->
+            <div ng-if="questioninfo.type_id === 1">
+                <ion-radio ng-repeat="question in questions[qikey]">
+                    <p><mm-format-text watch="true">{{ question.content }}</mm-format-text></p>
+                </ion-radio>
+            </div>
+            <!-- Text -->
+            <div ng-if="questioninfo.type_id === 2">
+                <textarea class="mm-textarea" ng-model="questions[qikey][0].value"></textarea>
+            </div>
+            <!-- Essay -->
+            <div ng-if="questioninfo.type_id === 3">
+                <textarea class="mm-textarea" ng-model="questions[qikey][0].value"></textarea>
+            </div>
+            <!-- Radio buttons -->
+            <div ng-if="questioninfo.type_id === 4">
+                <ion-radio ng-repeat="question in questions[qikey]" ng-value="1" ng-model="question.value">
+                    <p><mm-format-text watch="true">{{ question.content }}</mm-format-text></p>
+                </ion-radio>
+            </div>
+            <!-- Checkboxes -->
+            <div ng-if="questioninfo.type_id === 5">
+                <ion-checkbox ng-repeat="question in questions[qikey]" class="item-text-wrap item-checkbox-right" ng-value="1" ng-checked="question.value == 1" ng-model="question.value">
+                    <p><mm-format-text watch="true">{{ question.content }}</mm-format-text></p>
+                </ion-checkbox>
+            </div>
+        </section>
+        <div class="item">
+            <button class="button button-block button-positive">{{ 'mma.mod_questionnaire.submitsurvey' | translate }}</button>
+        </div>
+    </ion-content>
+</ion-view>

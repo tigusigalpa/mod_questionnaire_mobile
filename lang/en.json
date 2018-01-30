@@ -1,0 +1,5 @@
+{
+    "mma.mod_questionnaire.getquestionnaire": "Get your questionnaire",
+    "mma.mod_questionnaire.requiredtimenotmet": "You must spend at least a minimum of {{$a.requiredtime}} minutes in the course before you can access this questionnaire",
+    "mma.mod_questionnaire.summaryofattempts": "Summary of previously received questionnaires"
+}
