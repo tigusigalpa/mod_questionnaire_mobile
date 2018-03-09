@@ -2,46 +2,89 @@
     <ion-nav-title><mm-format-text watch="true">{{ title }}</mm-format-text></ion-nav-title>
     <ion-nav-buttons side="secondary">
         <mm-context-menu>
-            <mm-context-menu-item priority="900" ng-if="moduleUrl" href="moduleUrl" content="'mm.core.openinbrowser' | translate" icon-action="'ion-share'"></mm-context-menu-item>
+            <mm-context-menu-item priority="900" ng-if="moduleUrl" href="moduleUrl" 
+                                  content="'mm.core.openinbrowser' | translate" icon-action="'ion-share'"></mm-context-menu-item>
         </mm-context-menu>
     </ion-nav-buttons>
     <ion-content mm-state-class>
-        <mm-course-mod-description description="description" component="{{component}}" component-id="{{componentId}}" watch="true"></mm-course-mod-description>
-        
-        <!-- Choice options -->
+        <mm-course-mod-description description="description" 
+                                   component="{{component}}" 
+                                   component-id="{{componentId}}" 
+                                   watch="true"></mm-course-mod-description>
+        <section class="mm-info-card" ng-if="response.complete === 'y'">
+            <h2>{{ 'mma.mod_questionnaire.yourresponse' | translate }}</h2>
+            <p>{{ 'mma.mod_questionnaire.respondent' | translate }}: <strong>{{ response.fullname }}</strong></p>
+            <p>{{ 'mma.mod_questionnaire.submitted' | translate }} {{ response.userdate }}</p>
+        </section>
         <section class="card" ng-repeat="(qikey, questioninfo) in questionsinfo">
             <div class="item item-divider">
-                <h2>{{questioninfo.name}}</h2>
+                <h2>{{questioninfo.content | htmlToPlaintext}}<span ng-if="questioninfo.required == 'y'"> *</span></h2>
             </div>
-            <!-- Yes/No -->
-            <div ng-if="questioninfo.type_id === 1">
-                <ion-radio ng-repeat="question in questions[qikey]">
-                    <p><mm-format-text watch="true">{{ question.content }}</mm-format-text></p>
-                </ion-radio>
-            </div>
-            <!-- Text -->
-            <div ng-if="questioninfo.type_id === 2">
-                <textarea class="mm-textarea" ng-model="questions[qikey][0].value"></textarea>
-            </div>
-            <!-- Essay -->
-            <div ng-if="questioninfo.type_id === 3">
-                <textarea class="mm-textarea" ng-model="questions[qikey][0].value"></textarea>
-            </div>
-            <!-- Radio buttons -->
-            <div ng-if="questioninfo.type_id === 4">
-                <ion-radio ng-repeat="question in questions[qikey]" ng-value="1" ng-model="question.value">
-                    <p><mm-format-text watch="true">{{ question.content }}</mm-format-text></p>
-                </ion-radio>
-            </div>
-            <!-- Checkboxes -->
-            <div ng-if="questioninfo.type_id === 5">
-                <ion-checkbox ng-repeat="question in questions[qikey]" class="item-text-wrap item-checkbox-right" ng-value="1" ng-checked="question.value == 1" ng-model="question.value">
-                    <p><mm-format-text watch="true">{{ question.content }}</mm-format-text></p>
-                </ion-checkbox>
-            </div>
+            <form name="mma-mod_questionnaire-edit-form">
+                <!-- Yes/No -->
+                <div ng-if="questioninfo.type_id === 1">
+                    <ion-radio ng-repeat="(qid, question) in questions[qikey]" 
+                               ng-value="question.id === 1 ? 'y' : 'n'" 
+                               ng-model="question.value" 
+                               ng-disabled="response.complete === 'y'" 
+                               ng-required="questioninfo.required === 'y'" 
+                               ng-disabled="response.complete === 'y'">
+                        <p><mm-format-text>{{ question.content }}</mm-format-text></p>
+                    </ion-radio>
+                </div>
+                <!-- Text + Essay -->
+                <div ng-if="questioninfo.type_id === 2 || questioninfo.type_id === 3">
+                    <textarea class="mm-textarea huy" 
+                              ng-value="questions[qikey][0].value" 
+                              ng-model="questions[qikey][0].value" 
+                              ng-required="questioninfo.required === 'y'"></textarea>
+                </div>
+                <!-- Radio buttons -->
+                <div ng-if="questioninfo.type_id === 4">
+                    <ion-radio ng-repeat="(qid, question) in questions[qikey]" 
+                               ng-value="question.id" 
+                               ng-model="question.value" 
+                               ng-required="questioninfo.required === 'y'" 
+                               ng-disabled="response.complete === 'y'">
+                        <p><mm-format-text>{{ question.content }}</mm-format-text></p>
+                    </ion-radio>
+                </div>
+                <!-- Checkboxes -->
+                <div ng-if="questioninfo.type_id === 5">
+                    <ion-checkbox ng-repeat="(qid, question) in questions[qikey]" 
+                                  class="item-text-wrap item-checkbox-right" 
+                                  ng-value="question.id" 
+                                  ng-model="question.value" 
+                                  ng-checked="question.value == question.id" 
+                                  ng-required="questioninfo.required === 'y'" 
+                                  ng-disabled="response.complete === 'y'" 
+                                  name="qitem[{{question.id}}]">
+                        <p><mm-format-text watch="true">{{ question.content }}</mm-format-text></p>
+                    </ion-checkbox>
+                </div>
+                <!-- 1 from 5 -->
+                <div ng-if="questioninfo.type_id === 8">
+                    <div ng-repeat="(qid, question) in questions[qikey]">
+                        <div ng-repeat="k in [0, 1, 2, 3, 4]" 
+                             class="item item-divider" ng-if="k === 0">
+                            <h2>{{question.content}}</h2>
+                        </div>
+                        <ion-radio ng-repeat="k in [-999, 0, 1, 2, 3, 4]" 
+                                   ng-if="questioninfo.required === 'n' || (questioninfo.required === 'y' && k >= 0)" 
+                                   ng-value="{{k}}" 
+                                   ng-model="question.value" 
+                                   ng-required="questioninfo.required === 'y'" 
+                                   ng-disabled="response.complete === 'y'" 
+                                   name="qitem[{{question.id}}]">
+                            <p><mm-format-text>{{k === -999 ? ('mma.mod_questionnaire.noanswer' | translate) : k+1}}</mm-format-text></p>
+                        </ion-radio>
+                    </div>
+                </div>
+            </form>
         </section>
-        <div class="item">
-            <button class="button button-block button-positive">{{ 'mma.mod_questionnaire.submitsurvey' | translate }}</button>
+        <div class="item" ng-if="response.complete !== 'y'">
+            <button class="button button-block button-positive" ng-click="save()">
+                {{ 'mma.mod_questionnaire.submitsurvey' | translate }}</button>
         </div>
     </ion-content>
 </ion-view>
